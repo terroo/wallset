@@ -105,7 +105,7 @@ _resize_img(){
 }
 
 _count(){
-    ls ${_dir_img}/*.jpg | wc -l
+    ls ${_dir_img}/*.jpg 2>/dev/null | wc -l
 }
 
 _current(){
