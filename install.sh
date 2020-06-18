@@ -1,12 +1,20 @@
 #!/usr/bin/env bash
 # Installer to wallset
-deps=("ffmpeg" "feh" "convert" "xrandr" "xdg-open" "bash" "sed")
 
 if [[ $(echo $LANG | cut -c 1-2) == "pt" ]]; then
-  _lan=("Precisa instalar o: " "wallset foi instado com sucesso!")
+  _lan=("Precisa instalar o: " "wallset foi instado com sucesso!" "wallset foi removido.")
 else
-  _lan=("You need to install: " "wallset has been successfully installed!")
+  _lan=("You need to install: " "wallset has been successfully installed!" "wallset has been removed.")
 fi
+
+if [[ "$1" == "uninstall" ]]; then
+  sudo rm /usr/local/bin/wallset
+  rm -rf ${HOME}/.wallpapers
+  [[ "$?" == "0" ]] && printf "%s\n" "${_lan[2]}"
+fi
+
+deps=("ffmpeg" "feh" "convert" "xrandr" "xdg-open" "bash" "sed")
+
 
 for i in {0..6}; do
   which ${deps[i]} 2>&- >&-
