@@ -5,7 +5,7 @@ A wallpaper manager that makes it possible to put videos as wallpaper
 ```sh
 git clone https://github.com/terroo/wallset down-wallset
 cd down-wallset
-./install
+./install.sh
 ```
 
 # Uitlization
@@ -39,4 +39,11 @@ usage: wallset [options]
 ** Only videos in .mp4 format
 *** Only the first 10 seconds of the video will be displayed
 **** Use 3-digit images, example: 011
+```
+
+# Uninstall
+```sh
+git clone https://github.com/terroo/wallset down-wallset
+cd down-wallset
+./install.sh uninstall
 ```
