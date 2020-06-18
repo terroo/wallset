@@ -11,6 +11,7 @@ if [[ "$1" == "uninstall" ]]; then
   sudo rm /usr/local/bin/wallset
   rm -rf ${HOME}/.wallpapers
   [[ "$?" == "0" ]] && printf "%s\n" "${_lan[2]}"
+  exit 0
 fi
 
 deps=("ffmpeg" "feh" "convert" "xrandr" "xdg-open" "bash" "sed")
