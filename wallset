@@ -1,0 +1,279 @@
+#!/usr/bin/env bash
+# vim: noai:ts=4:sw=4:expandtab
+#
+# wallset: This program customizes images and videos for wallpaper
+# website: http://terminalroot.com.br/
+# author: Marcos Oliveira
+# dependencies: feh, ffmpeg, imagemagick(convert), xrandr, sed, bash, xdg-utils
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+shopt -s extglob
+
+if [[ $(echo $LANG | cut -c 1-2) == 'pt' ]]; then
+    _lang=("uso" "opções" "Altera o Wallpaper para o número informado. Use imagens com 3 dígitos, exemplo: 014,003,099" "Adiciona imagens" "Use antes do parâmetro -a,--add quando quiser adicionar já alterar" "Finaliza o loop" "Cria um loop de imagem com o tempo informado em segundos" "Abre a última imagem adicionada" "Informa quantas imagens há" "Mostra a atual imagem" "Adiciona um vídeo como Wallpaper" "Lista os vídeos que já foram utilizados" "Utiliza o vídeo pelo número listado em --list-videos" "Remove a última imagem adicionada" "Exibe essa ajuda" "Exibe a versão desse programa" "Exemplos" "Adiciona uma imagem" "Adiciona e já define como Wallpaper" "Altera para imagem com esse número" "Adiciona o vídeo" "Usa o vídeo já utilizado e listado" "Significa que precisa usar um número" "Somente vídeos nos formato .mp4" "Somente será exibido 10 segundos iniciais do vídeo" "Use imagens com 3 dígitos, exemplo: 011" "Não há nenhuma imagem." "Preparando o vídeo" "Use números indicados por" "Use números de 1 até" "Tempo inválido" "Tipo inválido" "Use números de 001 até" "Formato inválido." "Somente formato MP4" "Número inválido. Use" "Informe o vídeo" "Não há imagens." "Não há vídeos.")
+else
+    _lang=("usage" "options" "Change the Wallpaper to the number entered. Use images with 3 digits, example: 014,003,099" "Add images" "Use before the -a, --add parameter when you want to add already change" "Ends the loop" "Creates an image loop with the time reported in seconds" "Opens the last image added" "Informs how many images there are" "Shows the current image" "Adds a video as Wallpaper" "Lists the videos that have already been used" "Use the video by the number listed in --list-videos" "Remove the last image added" "Display this help" "Display the version of this program" "Examples" "Add an image" "Add and set it as Wallpaper" "Change to image with this number" "Add the video" "Use the video already used and listed" "Means that you need to use a number" "Only videos in .mp4 format" "Only the first 10 seconds of the video will be displayed" "Use 3-digit images, example: 011" "There is no image." "Preparing the video..." "Use numbers indicated by" "Use numbers numbers from 1 to" "Invalid time" "Invalid type" "Use numbers from 001 to" "Invalid format." "MP4 format only" "Invalid number. Use" "Report Video" "No images." "No videos.")
+fi
+
+_usage(){
+  cat <<EOF
+${_lang[0]}: ${0##*/} [${_lang[1]}]
+  
+  Options:
+    -u,--use [N]          ${_lang[2]}
+    -a,--add img.jpg ...  ${_lang[3]}
+    -S,--set              ${_lang[4]}       
+    -q,--quit             ${_lang[5]}
+    -t,--time [N]         ${_lang[6]}
+    -d,--display          ${_lang[7]}
+    -c,--count            ${_lang[8]}
+    -s,--show             ${_lang[9]}
+    -V,--video [video]    ${_lang[10]}
+    -L,--list-videos      ${_lang[11]}
+    -I,--set-video [N]    ${_lang[12]}
+    -r,--remove           ${_lang[13]}
+    -h,--help             ${_lang[14]}
+    -v,--version          ${_lang[15]}
+
+  ${_lang[16]}:  
+    ${_lang[17]} → '${0##*/} -a img.jpg'
+    ${_lang[18]} → '${0##*/} --set --add img.jpg'
+    ${_lang[19]} → '${0##*/} -u 001'
+    ${_lang[20]} → '${0##*/} -V video.mp4'
+    ${_lang[21]} → '${0##*/} -I 3'
+
+* [N] ${_lang[22]}
+** ${_lang[23]}
+*** ${_lang[24]}
+**** ${_lang[25]}
+EOF
+exit
+}
+
+_dir_img="${HOME}/.wallpapers"
+_dir_vid="${_dir_img}/video"
+pid="$$"
+
+[[ ! -d "${_dir_img}" ]] && mkdir -p "${_dir_img}"
+[[ ! -d "${_dir_vid}" ]] && mkdir -p "${_dir_vid}"
+ctrl_c(){
+    exit 127
+}
+
+_get_resolution_screen(){
+    xrandr | grep '*' | awk '{print $1}' | cut -dx -f1
+}
+
+_last_wall(){
+    ls ${_dir_img}/*.jpg 2>/dev/null >/dev/null
+    if [[ "$?" != "0" ]]; then
+        printf "%s" "0"
+    else
+        _n=$(ls -1 ${_dir_img}/*.jpg | tail -n 1 | tr -d 'a-z\.\-\/')
+        printf "%s" "${_n}"
+    fi
+}
+
+_new_number(){
+    _n=$(echo $(_last_wall) + 1 | bc)
+    [[ $(expr length ${_n}) == 1 ]] && _n="00${_n}" || _n="0${_n}"
+    printf "%s" "${_n}"
+    
+}
+
+_resize_img(){
+    _n=$(_new_number)
+    _w=$(_get_resolution_screen)
+    convert -resize "${_w}" "${1}" "${_dir_img}/wallpaper-${_n}.jpg"
+    if [[ "${add}" == 1 ]]; then
+        feh --bg-scale "${_dir_img}/wallpaper-${_n}.jpg"
+        [[ $(which gsettings >&- 2>&-) ]] && \
+            gsettings set org.gnome.desktop.background picture-uri file:///"${_dir_img}/wallpaper-${_n}.jpg"
+    fi
+}
+
+_count(){
+    ls ${_dir_img}/*.jpg | wc -l
+}
+
+_current(){
+    xdg-open "${_dir_img}/wallpaper-$(_last_wall).jpg"
+}
+
+_loop(){
+    if [[ $(_count) < 1 ]]; then
+        printf "%s\n" "${_lang[26]}"
+        exit 1
+    fi
+    i=1;
+    while : ; do
+        [[ "${i}" -ge "$(_count)" ]] && i=1
+        if [[ $(expr length $i) == 1 ]]; then
+            feh --bg-scale "${_dir_img}/wallpaper-00${i}.jpg"
+        else
+            feh --bg-scale "${_dir_img}/wallpaper-0${i}.jpg"
+        fi
+        sleep $1
+        let i=i+1
+        
+    done &
+        
+}
+
+_quit_loop(){
+    #kill -9 $$
+    killall -q bash 2>/dev/null >/dev/null
+}
+
+_set_img(){
+    ls "${_dir_img}/wallpaper-${1}.jpg" >/dev/null 2>/dev/null
+    if [[ "$?" == 0 ]]; then
+        feh --bg-scale "${_dir_img}/wallpaper-$1.jpg"
+        if [[ $(which gsettings >&- 2>&-) && "$XDG_CURRENT_DESKTOP" == "GNOME" ]]; then
+            gsettings set org.gnome.desktop.background picture-uri file:///"${_dir_img}/wallpaper-$1.jpg"
+        fi
+    else
+        _t=$(_count)
+        [[ "${_t}" -lt 100 ]] && _t="0${_t}"
+        echo "$1 - ${_lang[35]}: "$(ls ${_dir_img} | sed 's/wallpaper-//;s/\.jpg/ /g')
+    fi
+    
+}
+
+_show(){
+    egrep -o '[0-9]{3}' "${HOME}/.fehbg"
+}
+
+_video(){
+    a=1     
+    for i in $(ls -d $_dir_vid/*/ 2>/dev/null); do
+       if [[ -d "$_dir_vid/$a" ]]; then
+           let a=a+1
+       fi
+    done
+
+    mkdir -p "$_dir_vid/$a"
+
+    echo -e "${_lang[27]}...\r"
+    ffmpeg -y -ss 00:00 -i ${1} -t 10 "${_dir_vid}/${a}/filename%05d.jpg" > ${_dir_vid}/${a}/video.info 2>&1
+    t=$(ls ${_dir_vid}/${a}/* | wc -l)
+    let t=t-1
+    echo ${1} > ${_dir_vid}/${a}/video.info
+
+    i=1
+    # ctrl_c
+    while : ; do
+        feh --bg-scale $(ls -1 ${_dir_vid}/${a}/* | sed -n "${i}p")
+        sleep 0.01
+        let i=i+1
+        [[ "${i}" -gt "${t}" ]] && i=1              
+    done &
+}
+
+_list_vid(){
+    ls -d ${_dir_vid}/* 2>/dev/null >/dev/null
+    if [[ "$?" != "0" ]]; then
+        echo ${_lang[38]}
+        exit 1
+    fi
+    for i in $(ls -1 ${_dir_vid}/*/video.info); do
+        echo $i | awk 'BEGIN { FS = "/" } ; { print $6 }'
+        cat $i
+    done | paste - - | sed 's/\t/ → /g'
+}
+
+_set_video(){
+    ls -d ${_dir_vid}/* 2>/dev/null >/dev/null
+    if [[ "$?" != "0" ]]; then
+        echo ${_lang[38]}
+        exit 1
+    fi
+    if [[ $(echo "$1" | sed -n -r '/^[0-9]+$/p') == "" ]]; then
+        echo "${_lang[28]} '${0##*/} --list-videos'."
+    else
+        if [[ "$1" -gt "$(ls -d1 ${_dir_vid}/* | wc -l)" ]]; then
+            echo "${_lang[29]} $(ls -d1 ${_dir_vid}/* | wc -l)"
+            exit 1
+        else
+            t=$(ls ${_dir_vid}/${1}/* | wc -l)
+            let t=t-1
+            i=1
+            # ctrl_c
+            while : ; do
+                feh --bg-scale $(ls -1 ${_dir_vid}/${1}/* | sed -n "${i}p")
+                sleep 0.01
+                let i=i+1
+                [[ "${i}" -gt "${t}" ]] && i=1              
+            done &
+        fi
+    fi
+}
+
+while [[ "$1" ]]; do
+  case "${1}" in
+    -h|--help) _usage;;
+    -v|--version) echo "${0##*/} 0.0.1-beta";;
+    -s|--show) _show && exit;;
+    -c|--count) _count;;
+    -d|--display) _current;;
+    -t|--time) shift
+      if [[ $(echo "$1" | sed -n -r '/^[0-9]+$/p') == "" ]]; then
+         echo "${_lang[30]}"
+      else
+        _loop "$1"
+      fi
+      ;;
+    -q|--quit) _quit_loop;;
+    -S|--set) export add=1;;
+    -a|--add) shift
+      while [[ -f "${1}" ]]; do
+         if [[ "$(file ${1} | awk '{print $2}')" == @(PNG|JPEG) ]]; then
+          _resize_img $1
+         else
+           echo "${_lang[31]}: $1"
+         fi
+         shift
+      done
+      ;;
+    -u|--use) shift
+  
+      ls ${_dir_img}/*.jpg 2>/dev/null >/dev/null
+      if [[ "$?" != "0" ]]; then
+          echo "${_lang[37]}"
+          exit 1
+      fi
+
+      if [[ $(echo "$1" | sed -n -r '/^[0-9]+$/p') == "" ]]; then
+           echo "${_lang[32]} $(_last_wall)"
+      else
+         if [[ "$1" > "$(_last_wall)" ]]; then
+           echo "${_lang[32]} $(_last_wall)"
+         else
+           _set_img "$1"
+         fi
+      fi
+      ;;
+    -r|--remove-last) rm "${_dir_img}/wallpaper-$(_last_wall).jpg";;
+    --video|-V) shift;
+            [[ -z "$1" ]] && { echo "${_lang[36]}"; exit 1; }
+            [[ $(file -b --mime-type ${1} | cut -d"/" -f1) != 'video' ]] && { echo "${_lang[33]}"; exit 1; }
+            [[ $(file -b --mime-type ${1} | cut -d"/" -f2) != @(mp4|x-m4v) ]] && { echo "${_lang[34]}"; exit 1; }
+            _video "${1}"
+    ;;
+    -L|--list-videos) _list_vid ;;
+    -I|--set-video) shift; _set_video "${1}";;
+  esac
+  shift
+done
