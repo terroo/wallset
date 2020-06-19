@@ -31,7 +31,7 @@ usage: wallset [options]
     -d,--display          Opens the last image added
     -c,--count            Informs how many images there are
     -s,--show             Shows the current image
-    -V,--video [video]    Adds a video as Wallpaper
+    -V,--video [video]    Add a video as Wallpaper
     -L,--list-videos      Lists the videos that have already been used
     -I,--set-video [N]    Use the video by the number listed in --list-videos
     -r,--remove           Remove the last image added
