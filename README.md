@@ -2,13 +2,23 @@
 A wallpaper manager that makes it possible to put videos as wallpaper
 
 # Installation
+First you will need to have the dependencies installed on your system:
++ [>= ffmpeg 4.2.3](https://ffmpeg.org/)
++ [>= feh 3.4.1](https://feh.finalrewind.org/)
++ [>= imagemagick 7.0.10.16](https://www.imagemagick.org/)
++ [>= xrandr 1.5.1](https://gitlab.freedesktop.org/xorg/app/xrandr)
++ [>= xdg-utils 1.1.3](https://www.freedesktop.org/wiki/Software/xdg-utils/)
++ [>= bash 4.0](http://tiswww.case.edu/php/chet/bash/bashtop.html)
++ [>= sed 4.5](http://sed.sourceforge.net/)
+> Some software may work in versions lower than those reported.
+
 ```sh
 git clone https://github.com/terroo/wallset down-wallset
 cd down-wallset
 ./install.sh
 ```
 
-# Uitlization
+# Use
 ```sh
 usage: wallset [options]
   
@@ -40,6 +50,8 @@ usage: wallset [options]
 *** Only the first 10 seconds of the video will be displayed
 **** Use 3-digit images, example: 011
 ```
+
+There is a video that demonstrates the use at the address (pt-BR): <https://youtu.be/Mb0SXMft2sw>
 
 # Uninstall
 ```sh
