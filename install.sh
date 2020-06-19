@@ -2,7 +2,7 @@
 # Installer to wallset
 
 if [[ $(echo $LANG | cut -c 1-2) == "pt" ]]; then
-  _lan=("Precisa instalar o: " "wallset foi instado com sucesso!" "wallset foi removido.")
+  _lan=("Precisa instalar o: " "wallset foi instalado com sucesso!" "wallset foi removido.")
 else
   _lan=("You need to install: " "wallset has been successfully installed!" "wallset has been removed.")
 fi
