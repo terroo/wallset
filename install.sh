@@ -8,7 +8,7 @@ else
 fi
 
 if [[ "$1" == "uninstall" ]]; then
-  sudo rm /usr/local/bin/wallset
+  su root -c "rm /usr/local/bin/wallset"
   rm -rf ${HOME}/.wallpapers
   [[ "$?" == "0" ]] && printf "%s\n" "${_lan[2]}"
   exit 0
@@ -30,6 +30,5 @@ for i in {0..6}; do
   fi
 done
 
-sudo cp wallset /usr/local/bin/
-sudo chmod +x /usr/local/bin/wallset
+su root -c "cp wallset /usr/local/bin/ && chmod +x /usr/local/bin/wallset"
 [[ "$?" == "0" ]] && printf "%s\n" "${_lan[1]}"
