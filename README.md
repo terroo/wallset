@@ -15,7 +15,7 @@ First you will need to have the dependencies installed on your system:
 ```sh
 git clone https://github.com/terroo/wallset down-wallset
 cd down-wallset
-./install.sh
+sudo sh install.sh
 ```
 
 # Use
@@ -57,5 +57,5 @@ There is a video that demonstrates the use at the address (pt-BR): <https://yout
 ```sh
 git clone https://github.com/terroo/wallset down-wallset
 cd down-wallset
-./install.sh uninstall
+sudo sh install.sh uninstall
 ```
