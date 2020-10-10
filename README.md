@@ -17,6 +17,11 @@ git clone https://github.com/terroo/wallset down-wallset
 cd down-wallset
 sudo sh install.sh
 ```
+# The installer says that a package is not installed, but are you sure it is?
+Then force the installation with the parameter `--force`:
+```sh
+sudo sh install.sh --force
+```
 
 # Use
 ```sh

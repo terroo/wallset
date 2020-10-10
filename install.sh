@@ -14,6 +14,13 @@ if [[ "$1" == "uninstall" ]]; then
   exit 0
 fi
 
+
+if [[ "$1" == "--force" ]]; then
+  su root -c "cp wallset /usr/local/bin/ && chmod +x /usr/local/bin/wallset"
+  printf "%s\n" "${_lan[1]}"
+  exit 0
+fi
+
 deps=("ffmpeg" "feh" "convert" "xrandr" "xdg-open" "bash" "sed")
 
 
