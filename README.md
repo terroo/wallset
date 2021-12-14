@@ -62,5 +62,5 @@ There is a video that demonstrates the use at the address (pt-BR): <https://yout
 ```sh
 git clone https://github.com/terroo/wallset down-wallset
 cd down-wallset
-sudo sh install.sh uninstall
+sudo bash install.sh uninstall
 ```
