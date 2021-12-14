@@ -15,7 +15,7 @@ First you will need to have the dependencies installed on your system:
 ```sh
 git clone https://github.com/terroo/wallset down-wallset
 cd down-wallset
-sudo sh install.sh
+sudo bash install.sh
 ```
 # The installer says that a package is not installed, but are you sure it is?
 Then force the installation with the parameter `--force`:
