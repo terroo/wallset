@@ -40,7 +40,7 @@ ${_lang[0]}: ${0##*/} [${_lang[1]}]
     -d,--display          ${_lang[7]}
     -c,--count            ${_lang[8]}
     -s,--show             ${_lang[9]}
-    -V,--video [video]    ${_lang[10]}
+    -V,--video [video] [video quality #(2-31)] [framerate #] [duration #]    ${_lang[10]}
     -L,--list-videos      ${_lang[11]}
     -I,--set-video [N]    ${_lang[12]}
     -r,--remove           ${_lang[13]}
@@ -158,6 +158,18 @@ _show(){
 
 _video(){
     a=1     
+    f=25
+    q=6
+    d=10
+    if [[ $2 -ge 0 ]]; then
+        q=${2}
+    fi
+    if [[ $3 -ge 0 ]]; then
+        f=${3}
+    fi
+    if [[ $4 -ge 0 ]]; then
+        d=${4}
+    fi
     for i in $(ls -d $_dir_vid/*/ 2>/dev/null); do
        if [[ -d "$_dir_vid/$a" ]]; then
            let a=a+1
@@ -167,7 +179,7 @@ _video(){
     mkdir -p "$_dir_vid/$a"
 
     echo -e "${_lang[27]}...\r"
-    ffmpeg -y -ss 00:00 -i ${1} -t 10 "${_dir_vid}/${a}/filename%05d.jpg" > ${_dir_vid}/${a}/video.info 2>&1
+    ffmpeg -y -ss 00:00 -i ${1} -t ${d} -qscale:v ${q} -vf fps=${f} "${_dir_vid}/${a}/filename%05d.jpg" > ${_dir_vid}/${a}/video.info 2>&1
     t=$(ls ${_dir_vid}/${a}/* | wc -l)
     let t=t-1
     echo ${1} > ${_dir_vid}/${a}/video.info
@@ -270,7 +282,7 @@ while [[ "$1" ]]; do
             [[ -z "$1" ]] && { echo "${_lang[36]}"; exit 1; }
             [[ $(file -b --mime-type ${1} | cut -d"/" -f1) != 'video' ]] && { echo "${_lang[33]}"; exit 1; }
             [[ $(file -b --mime-type ${1} | cut -d"/" -f2) != @(mp4|x-m4v) ]] && { echo "${_lang[34]}"; exit 1; }
-            _video "${1}"
+            _video "${1}" "${2}" "${3}" "${4}"
     ;;
     -L|--list-videos) _list_vid ;;
     -I|--set-video) shift; _set_video "${1}";;
