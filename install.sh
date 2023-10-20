@@ -25,7 +25,7 @@ deps=("ffmpeg" "feh" "convert" "xrandr" "xdg-open" "bash" "sed")
 
 
 for i in {0..6}; do
-  which ${deps[i]} 2>&- >&-
+  which ${deps[i]} >/dev/null
   status=$?
   if [[ $status -ne 0 ]]; then 
     case "${deps[i]}" in
